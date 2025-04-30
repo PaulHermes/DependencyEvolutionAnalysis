@@ -1,16 +1,15 @@
-# This is a sample Python script.
+import os
+from global_parameters import *
+from git_util import partial_clone, analyze_history
 
-# Press Umschalt+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+def main():
+    os.chdir(script_dir)
+    try:
+        partial_clone(repo_url, clone_dir)
+        analyze_history(mvn_path, clone_dir)
+    except Exception as e:
+        print(f"\n Error occurred: {str(e)}")
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Strg+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+if __name__ == "__main__":
+    main()

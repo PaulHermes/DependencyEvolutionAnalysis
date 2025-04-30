@@ -2,15 +2,14 @@ import subprocess
 import os
 from global_parameters import *
 
-def output_pom_tree(mvn_path: str, output_file: str):
-    pom_path = os.path.abspath(os.path.join(script_dir, clone_dir))
+def output_pom_tree(mvn_path: str, output_dir: str, commit_hash: str, project_dir: str):
+    output_file = os.path.join(output_dir, f"{commit_hash}.txt")
     mvn_command = [
         mvn_path,
-       "-f", pom_path, 
+        "-f", project_dir,
         "dependency:tree",
         "-DoutputFile=" + output_file,
-        "-DappendOutput"
-        ]
+        "-DappendOutput"]
 
     try:
         subprocess.run(mvn_command, check=True, shell=True)

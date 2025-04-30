@@ -16,3 +16,5 @@ repo_url = "https://github.com/andyglick/maven-multi-level-modules-project.git"
 
 # path to output file
 output_file = os.path.abspath( os.path.join( script_dir, "maven_dependencies.txt" ) )
+
+output_dir = "dependency_history"

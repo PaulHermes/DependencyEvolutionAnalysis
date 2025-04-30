@@ -1,7 +1,5 @@
-import subprocess
-import os
-from global_parameters import *
 from mvn_util import *
+from src import global_parameters
 
 def run_command(command, cwd=None):
     result = subprocess.run(command, cwd=cwd, stdout=subprocess.PIPE, text=True)
@@ -21,8 +19,8 @@ def partial_clone(repo_url, clone_dir):
     ]
     run_command(clone_cmd)
 
-def get_pom_directories(clone_dir):
-    ls_output = run_command(["git", "ls-tree", "-r", "HEAD", "--name-only"], cwd=clone_dir) # list all files in the current Git repository
+def get_pom_directories(clone_dir, commit_hash='HEAD'):
+    ls_output = run_command(["git", "ls-tree", "-r", commit_hash, "--name-only"], cwd=clone_dir) # list all files in the current Git repository
     pom_dirs = set()
     for line in ls_output.splitlines():
         if line.endswith("pom.xml"):
@@ -34,9 +32,42 @@ def get_pom_directories(clone_dir):
     return list(pom_dirs)
 
 def sparse_checkout_set(clone_dir, paths):
-    run_command(["git", "sparse-checkout", "init"], cwd=clone_dir)
+    run_command(["git", "sparse-checkout", "init", "--cone"], cwd=clone_dir)
     cmd = ["git", "sparse-checkout", "set"] + paths
     run_command(cmd, cwd=clone_dir)
+
+def get_pom_commits(clone_dir):
+    cmd = ["git", "log", "--all", "--pretty=format:%H", "--", "**/pom.xml"]
+    output = run_command(cmd, cwd=clone_dir)
+    return output.splitlines()
+
+
+def analyze_history(mvn_path, clone_dir):
+    output_dir = os.path.join(script_dir, global_parameters.output_dir)
+    os.makedirs(output_dir, exist_ok=True)
+
+    commits = get_pom_commits(clone_dir)
+
+    for commit in commits:
+        try:
+            run_command(["git", "checkout", "--force", commit], cwd=clone_dir)
+            pom_dirs = get_pom_directories(clone_dir, commit)
+
+            if not pom_dirs:
+                continue
+
+            sparse_checkout_set(clone_dir, pom_dirs)
+
+            root_pom = os.path.join(clone_dir, "pom.xml")
+            if os.path.exists(root_pom):
+                output_pom_tree(mvn_path, output_dir, commit, clone_dir)
+            else:
+                for pom_dir in pom_dirs:
+                    full_path = os.path.join(clone_dir, pom_dir)
+                    output_pom_tree(mvn_path, output_dir, commit, full_path)
+
+        except subprocess.CalledProcessError as e:
+            print(f"Skipping commit {commit}: {e.stderr}")
 
 # Folgendes nur zum Testen von den spezifischen Funktionen hier drin
 # Will, dass spaeter hier einfach die git funktionen sind und im main script einfach mit den Funktionen hier gepullt wird 
