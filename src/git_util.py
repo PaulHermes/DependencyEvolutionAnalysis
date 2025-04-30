@@ -8,11 +8,12 @@ def run_command(command, cwd=None):
     return result.stdout.strip()
 
 def partial_clone(repo_url, clone_dir):
-    """Sparsely clones metadata of a git repository
-        --> only first level, no folders
-    
-    @param repo_url(str): URL of git repository
-    @param clone_dir(str): folder to clone to
+    """Sparsely clones metadata of a git repository.
+    This fetches only the repository’s tree structure (no file blobs except for top-level files),
+    allowing us to later pull down just the files we actually need.
+
+    @param repo_url: URL of git repository
+    @param clone_dir: folder to clone to
     """
     clone_cmd = [
         "git", "clone", "--filter=blob:none", "--sparse",
@@ -50,5 +51,4 @@ if __name__ == "__main__":
     partial_clone(repo_url, clone_dir)
     pom_paths = get_pom_directories(clone_dir)
     sparse_checkout_set(clone_dir, pom_paths)
-    
-    output_pom_tree(mvn_path, output_file)
+

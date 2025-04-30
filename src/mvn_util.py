@@ -13,9 +13,12 @@ def output_pom_tree(mvn_path: str, output_file: str):
         ]
 
     try:
-        subprocess.run(mvn_command, check=True)
+        subprocess.run(mvn_command, check=True, shell=True)
         print("Maven dependency tree command executed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while executing the command: {e}")
     except FileNotFoundError:
         print("Maven executable not found. Please check the path.")
+
+if __name__ == "__main__":
+    output_pom_tree(mvn_path, output_file)

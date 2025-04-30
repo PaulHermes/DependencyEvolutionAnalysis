@@ -35,6 +35,30 @@ sudo apt install maven
 verify installation with
 ```mvn -v```
 
+### Setup on Windows
+#### 1. Download Maven ####
+
+Visit the [Apache Maven download page](https://maven.apache.org/download.cgi).
+
+Download the latest binary zip archive.
+
+#### 2. Extract the Archive ####
+
+Unzip the downloaded archive to a directory of your choice, such as: ```C:\Program Files\Apache\Maven```
+
+#### 3. New Environment Variable ####
+
+Variable name: ```MAVEN_HOME```
+
+Variable value: ```C:\Program Files\Apache\Maven (adjust if you chose a different directory)```
+
+
+#### 4. Update the Path Variable ####
+Add a new entry to the Path Variable: ```C:\Program Files\Apache\Maven\bin```
+#### 5. Verify Installation ####
+
+verify installation with
+```mvn -v```
 
 ## Current Features
 
