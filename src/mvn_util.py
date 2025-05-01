@@ -11,8 +11,9 @@ def output_pom_tree(mvn_path: str, output_dir: str, commit_hash: str, project_di
         "-DoutputFile=" + output_file,
         "-DappendOutput"]
 
+    is_windows = platform.system() == "Windows"
     try:
-        subprocess.run(mvn_command, check=True, shell=True)
+        subprocess.run(mvn_command, check=True, shell=is_windows)
         print("Maven dependency tree command executed successfully.")
     except subprocess.CalledProcessError as e:
         print(f"An error occurred while executing the command: {e}")
