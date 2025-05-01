@@ -1,5 +1,5 @@
 from mvn_util import *
-from src import global_parameters
+from global_parameters import *
 
 def run_command(command, cwd=None):
     result = subprocess.run(command, cwd=cwd, stdout=subprocess.PIPE, text=True)
@@ -43,8 +43,8 @@ def get_pom_commits(clone_dir):
 
 
 def analyze_history(mvn_path, clone_dir):
-    output_dir = os.path.join(script_dir, global_parameters.output_dir)
-    os.makedirs(output_dir, exist_ok=True)
+    output_directory = os.path.join(script_dir, output_dir)
+    os.makedirs(output_directory, exist_ok=True)
 
     commits = get_pom_commits(clone_dir)
 
@@ -60,11 +60,11 @@ def analyze_history(mvn_path, clone_dir):
 
             root_pom = os.path.join(clone_dir, "pom.xml")
             if os.path.exists(root_pom):
-                output_pom_tree(mvn_path, output_dir, commit, clone_dir)
+                output_pom_tree(mvn_path, output_directory, commit, clone_dir)
             else:
                 for pom_dir in pom_dirs:
                     full_path = os.path.join(clone_dir, pom_dir)
-                    output_pom_tree(mvn_path, output_dir, commit, full_path)
+                    output_pom_tree(mvn_path, output_directory, commit, full_path)
 
         except subprocess.CalledProcessError as e:
             print(f"Skipping commit {commit}: {e.stderr}")
