@@ -37,9 +37,14 @@ def sparse_checkout_set(clone_dir, paths):
     run_command(cmd, cwd=clone_dir)
 
 def get_pom_commits(clone_dir):
-    cmd = ["git", "log", "--all", "--pretty=format:%H", "--", "**/pom.xml"]
+    pom_paths = get_pom_directories(clone_dir)
+    pom_files = [os.path.join(path, "pom.xml") if path != "." else "pom.xml" for path in pom_paths]
+    if not pom_files:
+        return []
+
+    cmd = ["git", "log", "--all", "--pretty=format:%H", "--"] + pom_files
     output = run_command(cmd, cwd=clone_dir)
-    return output.splitlines()
+    return list(dict.fromkeys(output.splitlines()))
 
 
 def analyze_history(mvn_path, clone_dir):
