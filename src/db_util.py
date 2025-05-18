@@ -22,8 +22,8 @@ def create_db():
 
     cursor = conn.cursor()
 
-    # TODO ? repo name is in "" to avoid errors due to special characters
-    cursor.execute(f'CREATE TABLE IF NOT EXISTS "{repo_name}" (version VARCHAR(100) PRIMARY KEY)')
+    cursor.execute(f'DROP TABLE IF EXISTS "{repo_name}"')
+    cursor.execute(f'CREATE TABLE "{repo_name}" (version VARCHAR(100) PRIMARY KEY)')
 
     # create row for every .txt
     history_dir = os.path.join(os.path.dirname(__file__), 'dependency_history')
@@ -39,26 +39,42 @@ def create_db():
                 line = line.rstrip()
                 
                 # tracking only main dependencies
-                if line.startswith("\\-") and not line.startswith("   \\-"):
+                if '\\-' in line:
+                    line = line[line.index('\\-') + 2:].strip()
 
-                    # TODO needs a bit more finetuning, was unsure what exaxtly is what now and if test belongs to the version number
+                    # TODO needs a bit more finetuning, was unsure what exactly is what now and if test belongs to the version number
 
-                    match = re.match(r"([^:]+):([^:]+):[^:]+:(\S+)", line.strip())
+                    match = re.match(r"([^:]+):[^:]+:[^:]+:([^:]+)", line.strip())
                     if match:
-                        dependency = match.group(2)
-                        dependency_version = match.group(3)
+                        dependency = match.group(1)
+                        dependency_version = match.group(2)
+                        print("Dependency:", dependency)
+                        print("Version:", dependency_version)
 
                         # get all columns from table description and put column names in array
                         cursor.execute(f'SELECT * FROM "{repo_name}" LIMIT 1')
                         existing_columns = set(desc[0] for desc in cursor.description)
 
-                        # Only create column if not existing
+                        # only create column if not existing
                         if dependency not in existing_columns:
                             cursor.execute(f'''ALTER TABLE "{repo_name}" ADD COLUMN "{dependency}" VARCHAR(100)''')
-                            existing_columns.add(dependency)    # TODO question here
+                            existing_columns.add(dependency)
 
-                        # update version for corresponding dependency column and row
-                        cursor.execute(f'''UPDATE "{repo_name}" SET "{dependency}" = ? WHERE version = ?''', [dependency_version, version])
+                        # check if there's already a value for that dependency in that version
+                        cursor.execute(f'''SELECT "{dependency}" FROM "{repo_name}" WHERE version = ?''', [version])
+                        existing = cursor.fetchone()[0]
+
+                        if existing:
+                            # append different versions with ;
+                            versions = set(existing.split(';'))
+                            versions.add(dependency_version)
+                            new_value = ';'.join(sorted(versions))
+                        else:
+                            new_value = dependency_version
+
+                        # insert into table
+                        cursor.execute(f'''UPDATE "{repo_name}" SET "{dependency}" = ? WHERE version = ?''', [new_value, version])
+
 
     cursor.execute(f'SELECT * FROM "{repo_name}"')
     rows = cursor.fetchall()
