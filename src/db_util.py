@@ -28,13 +28,22 @@ def create_db():
     # create row for every .txt
     history_dir = os.path.join(os.path.dirname(__file__), 'dependency_history')
     for filename in os.listdir(history_dir):
-        # either put version in filename or in txt (at the moment saving the commit hash for the version entry)
-        version = filename[:-4]
-        cursor.execute(f'MERGE INTO "{repo_name}" (version) KEY (version) VALUES (?)', [version])
 
         file_path = os.path.join(history_dir, filename)
         
         with open(file_path, 'r') as file:
+
+            first_line = file.readline().strip()
+
+            # takes version from first line in txt
+            match = re.match(r"[^:]+:[^:]+:[^:]+:([^:]+)", first_line)
+            if match:
+                version = match.group(1)
+            else:
+                version = filename[:-4]
+                print(f"[INFO] Couldn't extract version number from pom, taking commit hash instead: {version}")
+            cursor.execute(f'MERGE INTO "{repo_name}" (version) KEY (version) VALUES (?)', [version])
+        
             for line in file:
                 line = line.rstrip()
                 

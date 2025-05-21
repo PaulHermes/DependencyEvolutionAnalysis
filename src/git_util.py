@@ -53,7 +53,7 @@ def analyze_history(mvn_path, clone_dir):
 
     commits = get_pom_commits(clone_dir)
 
-    for commit in commits:
+    for commit in commits[:100]:
         try:
             run_command(["git", "checkout", "--force", commit], cwd=clone_dir)
             pom_dirs = get_pom_directories(clone_dir, commit)
