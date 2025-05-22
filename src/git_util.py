@@ -42,10 +42,19 @@ def get_pom_commits(clone_dir):
     if not pom_files:
         return []
 
-    cmd = ["git", "log", "--all", "--pretty=format:%H", "--"] + pom_files
+    # save commits in a dict{hash, timestamp} with the timestamp format YYYY-MM-DD hh:mm:ss timezone
+    # output has the format "4f5e6a1234567890abcdef1234567890abcdef12|2024-06-01 14:23:45 +0200"
+    cmd = ["git", "log", "--all", "--pretty=format:%H|%ci", "--"] + pom_files
     output = run_command(cmd, cwd=clone_dir)
-    return list(dict.fromkeys(output.splitlines()))
+    commits = []
+    for line in output.strip().splitlines():
+        commit_hash, timestamp = line.split("|", 1)
+        commits.append({
+            "hash": commit_hash.strip(),
+            "timestamp": timestamp.strip()
+        })
 
+    return commits
 
 def analyze_history(mvn_path, clone_dir):
     output_directory = os.path.join(script_dir, output_dir)
@@ -55,8 +64,8 @@ def analyze_history(mvn_path, clone_dir):
 
     for commit in commits[:100]:
         try:
-            run_command(["git", "checkout", "--force", commit], cwd=clone_dir)
-            pom_dirs = get_pom_directories(clone_dir, commit)
+            run_command(["git", "checkout", "--force", commit["hash"]], cwd=clone_dir)
+            pom_dirs = get_pom_directories(clone_dir, commit["hash"])
 
             if not pom_dirs:
                 continue
@@ -65,30 +74,21 @@ def analyze_history(mvn_path, clone_dir):
 
             root_pom = os.path.join(clone_dir, "pom.xml")
             if os.path.exists(root_pom):
-                output_pom_tree(mvn_path, output_directory, commit, clone_dir)
+                output_pom_tree(mvn_path, output_directory, commit["hash"], commit["timestamp"], clone_dir)
             else:
                 for pom_dir in pom_dirs:
                     full_path = os.path.join(clone_dir, pom_dir)
-                    output_pom_tree(mvn_path, output_directory, commit, full_path)
+                    output_pom_tree(mvn_path, output_directory, commit["hash"], commit["timestamp"], full_path)
 
         except subprocess.CalledProcessError as e:
-            print(f"Skipping commit {commit}: {e.stderr}")
-
-def get_commit_time_stamp( commit_hash ):
-    # returns timestamp of commit in format "YYYY-MM-DD hh:mm:ss timezone"
-    cmd = ["git", "show", "-s", "--format=%ci", commit_hash]
-    output = run_command(cmd, cwd=clone_dir)
-    return output
+            print(f"Skipping commit {commit["hash"]}: {e.stderr}")
 
 # Folgendes nur zum Testen von den spezifischen Funktionen hier drin
 # Will, dass spaeter hier einfach die git funktionen sind und im main script einfach mit den Funktionen hier gepullt wird 
 # und dann mit "mvn dependency:tree" subprocess call die text datei und dann DB eintraege gemacht werden. Allerdings not sure wie die commit history danach genutzt wird
 if __name__ == "__main__":
-    # test timestamp function
-    print( get_commit_time_stamp("0e6f9c4f79530de407ad331bf0bc7d17fff66b1b") )
-
     # # Change the current working directory to the directory of the Python script
-    # os.chdir(script_dir)
+    os.chdir(script_dir)
     #
     # # Idee hinter partial clone und sparse checkout ist es, dass wir vorerst durch den blob filter nur Ordnerstruktur herunterladen und KEINE dateiinhalte bis diese benoetigt werden
     # # sparse_checkout_set ist dann eben fuer das holen der benoetigten pom.xml dateien

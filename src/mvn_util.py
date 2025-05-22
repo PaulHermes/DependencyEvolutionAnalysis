@@ -2,8 +2,11 @@ import subprocess
 import os
 from global_parameters import *
 
-def output_pom_tree(mvn_path: str, output_dir: str, commit_hash: str, project_dir: str):
+def output_pom_tree(mvn_path: str, output_dir: str, commit_hash: str, commit_timestamp: str, project_dir: str):
     output_file = os.path.join(output_dir, f"{commit_hash}.txt")
+    with open(output_file, "w") as f:
+        f.write(commit_timestamp + '\n')
+        f.close()
     mvn_command = [
         mvn_path,
         "-f", project_dir,
