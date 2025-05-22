@@ -74,17 +74,26 @@ def analyze_history(mvn_path, clone_dir):
         except subprocess.CalledProcessError as e:
             print(f"Skipping commit {commit}: {e.stderr}")
 
+def get_commit_time_stamp( commit_hash ):
+    # returns timestamp of commit in format "YYYY-MM-DD hh:mm:ss timezone"
+    cmd = ["git", "show", "-s", "--format=%ci", commit_hash]
+    output = run_command(cmd, cwd=clone_dir)
+    return output
+
 # Folgendes nur zum Testen von den spezifischen Funktionen hier drin
 # Will, dass spaeter hier einfach die git funktionen sind und im main script einfach mit den Funktionen hier gepullt wird 
 # und dann mit "mvn dependency:tree" subprocess call die text datei und dann DB eintraege gemacht werden. Allerdings not sure wie die commit history danach genutzt wird
 if __name__ == "__main__":
-    # Change the current working directory to the directory of the Python script
-    os.chdir(script_dir)
-    
-    # Idee hinter partial clone und sparse checkout ist es, dass wir vorerst durch den blob filter nur Ordnerstruktur herunterladen und KEINE dateiinhalte bis diese benoetigt werden
-    # sparse_checkout_set ist dann eben fuer das holen der benoetigten pom.xml dateien
-    # Zum Verifizieren "git ls-tree -r HEAD". alles andere sorgt dann dafuer, dass die datei benoetigt wird und gefetcht wuerde
-    partial_clone(repo_url, clone_dir)
-    pom_paths = get_pom_directories(clone_dir)
-    sparse_checkout_set(clone_dir, pom_paths)
+    # test timestamp function
+    print( get_commit_time_stamp("0e6f9c4f79530de407ad331bf0bc7d17fff66b1b") )
+
+    # # Change the current working directory to the directory of the Python script
+    # os.chdir(script_dir)
+    #
+    # # Idee hinter partial clone und sparse checkout ist es, dass wir vorerst durch den blob filter nur Ordnerstruktur herunterladen und KEINE dateiinhalte bis diese benoetigt werden
+    # # sparse_checkout_set ist dann eben fuer das holen der benoetigten pom.xml dateien
+    # # Zum Verifizieren "git ls-tree -r HEAD". alles andere sorgt dann dafuer, dass die datei benoetigt wird und gefetcht wuerde
+    # partial_clone(repo_url, clone_dir)
+    # pom_paths = get_pom_directories(clone_dir)
+    # sparse_checkout_set(clone_dir, pom_paths)
 
