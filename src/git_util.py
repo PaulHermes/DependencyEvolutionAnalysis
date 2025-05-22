@@ -56,13 +56,22 @@ def get_pom_commits(clone_dir):
 
     return commits
 
-def analyze_history(mvn_path, clone_dir):
+def analyze_history(mvn_path, clone_dir, commit_limit=None):
+    """Analyze the dependecy tree of all commits where a pom.xml was changed
+    For every commit a text file is created in pom_dirs.
+    The first line of the file is the timestamp of the commit.
+
+    @param mvn_path: path to mvn
+    @param clone_dir: directory where repository got cloned to
+    @param commit_limit: limits analyzation to last x commits
+    """
+        
     output_directory = os.path.join(script_dir, output_dir)
     os.makedirs(output_directory, exist_ok=True)
 
     commits = get_pom_commits(clone_dir)
 
-    for commit in commits[:100]:
+    for commit in commits[:commit_limit]:
         try:
             run_command(["git", "checkout", "--force", commit["hash"]], cwd=clone_dir)
             pom_dirs = get_pom_directories(clone_dir, commit["hash"])

@@ -23,3 +23,6 @@ output_dir = "dependency_history"
 # path to the h2.jar and the .db file
 h2_jar_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "h2-2.3.232.jar")
 db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dependency_analysis")
+
+# test parameters
+commit_limit = 100

@@ -7,7 +7,7 @@ def main():
     os.chdir(script_dir)
     try:
         partial_clone(repo_url, clone_dir)
-        analyze_history(mvn_path, clone_dir)
+        analyze_history(mvn_path, clone_dir, commit_limit)
         create_db()
     except Exception as e:
         print(f"\n Error occurred: {str(e)}")
