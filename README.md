@@ -28,6 +28,7 @@ For each repository, the tool will:
 
 ### Setup on Linux
 
+#### 1. Maven
 ```bash
 sudo apt update
 sudo apt install maven
@@ -35,33 +36,32 @@ sudo apt install maven
 verify installation with
 ```mvn -v```
 
+#### 2. Python Packages
+This project requires the install of the following packages:
+```bash
+pip install jaydebeapi
+```
+
 ### Setup on Windows
-#### 1. Download Maven ####
-
-Visit the [Apache Maven download page](https://maven.apache.org/download.cgi).
-
-Download the latest binary zip archive.
-
-#### 2. Extract the Archive ####
-
-Unzip the downloaded archive to a directory of your choice, such as: ```C:\Program Files\Apache\Maven```
-
-#### 3. New Environment Variable ####
-
-Variable name: ```MAVEN_HOME```
-
-Variable value: ```C:\Program Files\Apache\Maven (adjust if you chose a different directory)```
-
-
-#### 4. Update the Path Variable ####
-Add a new entry to the Path Variable: ```C:\Program Files\Apache\Maven\bin```
-#### 5. Verify Installation ####
-
-verify installation with
-```mvn -v```
+*Windows is currently not supported*
 
 ## Current Features
 
 - Partial Git clone of repositories (with automatic detection of 'pom.xml' directories
 - extraction of maven dependency trees using the [maven-dependency-plugin](https://github.com/apache/maven-dependency-plugin/)
 - output stored in a .txt file for further steps
+- Generation of a h2 database of dependencies of every version
+
+## Accessing the database
+### Option 1: H2 Webviewer
+1. Execute the h2 jar file, this opens the webviewer in a browser:
+```bash
+java -jar h2-2.3.232.jar
+```
+2. Connect to the database:
+
+- In field `JDBC URL`enter:
+``` 
+jdbc:h2:PATH_TO_DATABASE_WITHOUT_FILE_EXTENSION
+```
+- Leave both `User Name` and `Password` blank
