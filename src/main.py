@@ -4,6 +4,10 @@ from git_util import partial_clone, analyze_history
 from db_util import create_db
 
 def main():
+    if platform.system() == "Windows":
+        print("Windows is not supported by this program")
+        return -1
+
     os.chdir(script_dir)
     try:
         partial_clone(repo_url, clone_dir)
