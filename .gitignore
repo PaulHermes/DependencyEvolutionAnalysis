@@ -3,3 +3,9 @@
 
 # Virtual environment
 venv/
+
+src/__pycache__/
+src/cloned_repository/
+src/dependency_history/
+src/dependency_analysis.mv.db
+src/dependency_graph.gexf
