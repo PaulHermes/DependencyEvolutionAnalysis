@@ -1,15 +1,9 @@
 import jaydebeapi
 from global_parameters import *
-from urllib.parse import urlparse
 import re
 from datetime import datetime
 
 def create_db():
-    # get repo name from url
-    parsed_url = urlparse(repo_url)
-    repo_name = os.path.basename(parsed_url.path)
-    repo_name = repo_name.replace(".git", "")
-
     # jdbc url for h2 db
     url = f"jdbc:h2:file:{db_path}"
 
