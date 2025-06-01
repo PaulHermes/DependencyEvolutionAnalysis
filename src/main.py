@@ -1,6 +1,8 @@
 import os
+import platform
 import argparse
-from global_parameters import *
+import global_parameters
+from urllib.parse import urlparse
 from git_util import partial_clone, analyze_history
 from db_util import create_db
 
@@ -9,15 +11,21 @@ def main():
         print("Windows is not supported by this program")
         return -1
 
+    # Handle command line arguments
     args = handle_command_line_arguments()
 
-    repo_url = args.git if args.git else default_repo_url   # TODO change to throw error for final release
-    commit_limit = args.limit if args.limit else default_commit_limit
+    global_parameters.repo_url = args.git if args.git else global_parameters.default_repo_url   # TODO change to throw error for final release
+    commit_limit = args.limit if args.limit else global_parameters.default_commit_limit
+
+    set_repo_name(global_parameters.repo_url)   # for database 
     
-    os.chdir(script_dir)
+    # Set working directory
+    os.chdir(global_parameters.script_dir)
+
+    # Run main part
     try:
-        partial_clone(repo_url, clone_dir)
-        analyze_history(mvn_path, clone_dir, commit_limit)
+        partial_clone(global_parameters.repo_url, global_parameters.clone_dir)
+        analyze_history(global_parameters.mvn_path, global_parameters.clone_dir, commit_limit)
         create_db()
     except Exception as e:
         print(f"\n Error occurred: {str(e)}")
@@ -32,6 +40,10 @@ def handle_command_line_arguments():
     # Keep/Delete previously saved repos
 
     return parser.parse_args()
+
+def set_repo_name(url):
+    parsed_url = urlparse(url)
+    global_parameters.repo_name = os.path.basename(parsed_url.path).replace(".git", "")
 
 if __name__ == "__main__":
     main()

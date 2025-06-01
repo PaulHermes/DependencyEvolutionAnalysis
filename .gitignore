@@ -3,6 +3,7 @@
 
 # Virtual environment
 venv/
+.venv/
 
 src/__pycache__/
 src/cloned_repository/

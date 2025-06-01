@@ -1,5 +1,6 @@
 import subprocess
 import os
+import platform
 from global_parameters import *
 
 def output_pom_tree(mvn_path: str, output_dir: str, commit_hash: str, commit_timestamp: str, project_dir: str):

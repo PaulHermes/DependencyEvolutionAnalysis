@@ -1,6 +1,6 @@
 import os
-from urllib.parse import urlparse
-import platform
+
+
 ## constant parameters
 # directory to store cloned repository
 clone_dir = "cloned_repository"
@@ -15,6 +15,7 @@ mvn_path = "mvn"
 # URL of github repository to clone
 # repo_url = "https://github.com/andyglick/maven-multi-level-modules-project.git"
 default_repo_url = "https://github.com/apache/commons-lang"
+repo_url = None # set in main
 
 # path to output file
 output_file = os.path.abspath( os.path.join( script_dir, "maven_dependencies.txt" ) )
@@ -26,11 +27,10 @@ h2_jar_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "h2-2.3.2
 db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dependency_analysis")
 
 # get repo name from url
-parsed_url = urlparse(repo_url)
-repo_name = os.path.basename(parsed_url.path).replace(".git", "")
+repo_name = None # set in main set_repo_name()
 
 # path to .gexf file used for gephi
 gephi_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dependency_graph.gexf")
 
 # test parameters
-default_commit_limit = None
+default_commit_limit = None # set in main
