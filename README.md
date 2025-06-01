@@ -58,6 +58,13 @@ https://gephi.org/users/install/
 - output stored in a .txt file for further steps
 - Generation of a h2 database of dependencies of every version
 
+## Command Line Parameter
+| Parameter | Explaination |
+|---|---|
+| -h --help | Show help |
+| -g --git | Link to GitHub repository to analyze |
+| -l --limit | Limits the amount of commits analyzed to last X commits |
+
 ## Accessing the database
 ### Option 1: H2 Webviewer
 1. Execute the h2 jar file, this opens the webviewer in a browser:
