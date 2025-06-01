@@ -1,14 +1,9 @@
 import jaydebeapi
 from global_parameters import *
-from urllib.parse import urlparse
 import re
+from datetime import datetime
 
 def create_db():
-    # get repo name from url
-    parsed_url = urlparse(default_repo_url)
-    repo_name = os.path.basename(parsed_url.path)
-    repo_name = repo_name.replace(".git", "")
-
     # jdbc url for h2 db
     url = f"jdbc:h2:file:{db_path}"
 
@@ -22,8 +17,13 @@ def create_db():
 
     cursor = conn.cursor()
 
-    cursor.execute(f'DROP TABLE IF EXISTS "{repo_name}"')
-    cursor.execute(f'CREATE TABLE "{repo_name}" (version VARCHAR(100) PRIMARY KEY)')
+    # only create table if not existing
+    cursor.execute(f'''
+        CREATE TABLE IF NOT EXISTS "{repo_name}" (
+            version VARCHAR(100) PRIMARY KEY,
+            date DATE
+        )
+    ''')
 
     # create row for every .txt
     history_dir = os.path.join(os.path.dirname(__file__), 'dependency_history')
@@ -34,15 +34,29 @@ def create_db():
         with open(file_path, 'r') as file:
 
             first_line = file.readline().strip()
+            dt = datetime.strptime(first_line, "%Y-%m-%d %H:%M:%S %z")
+            date = dt.strftime("%Y-%m-%d")
+
+            second_line = file.readline().strip()
 
             # takes version from first line in txt
-            match = re.match(r"[^:]+:[^:]+:[^:]+:([^:]+)", first_line)
+            match = re.match(r"[^:]+:[^:]+:[^:]+:([^:]+)", second_line)
             if match:
                 version = match.group(1)
             else:
                 version = filename[:-4]
                 print(f"[INFO] Couldn't extract version number from pom, taking commit hash instead: {version}")
             cursor.execute(f'MERGE INTO "{repo_name}" (version) KEY (version) VALUES (?)', [version])
+
+            cursor.execute(f'SELECT date FROM "{repo_name}" WHERE version = ?', [version])
+            existing_date = cursor.fetchone()
+
+            if existing_date and existing_date[0]:
+                # take version release date representing for version
+                if date < existing_date[0]:
+                    cursor.execute(f'UPDATE "{repo_name}" SET date = ? WHERE version = ?', [date, version])
+            else:
+                cursor.execute(f'MERGE INTO "{repo_name}" (version, date) KEY (version) VALUES (?, ?)', [version, date])
         
             for line in file:
                 line = line.rstrip()
@@ -51,14 +65,10 @@ def create_db():
                 if '\\-' in line:
                     line = line[line.index('\\-') + 2:].strip()
 
-                    # TODO needs a bit more finetuning, was unsure what exactly is what now and if test belongs to the version number
-
                     match = re.match(r"([^:]+):[^:]+:[^:]+:([^:]+)", line.strip())
                     if match:
                         dependency = match.group(1)
                         dependency_version = match.group(2)
-                        print("Dependency:", dependency)
-                        print("Version:", dependency_version)
 
                         # get all columns from table description and put column names in array
                         cursor.execute(f'SELECT * FROM "{repo_name}" LIMIT 1')

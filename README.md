@@ -40,7 +40,13 @@ verify installation with
 This project requires the install of the following packages:
 ```bash
 pip install jaydebeapi
+
+pip install networkx
 ```
+
+#### 3. Gephi
+Gephi is the graphics viewer for the dependency graph and can be installed under:
+https://gephi.org/users/install/
 
 ### Setup on Windows
 *Windows is currently not supported*
