@@ -5,7 +5,7 @@ import re
 
 def create_db():
     # get repo name from url
-    parsed_url = urlparse(repo_url)
+    parsed_url = urlparse(default_repo_url)
     repo_name = os.path.basename(parsed_url.path)
     repo_name = repo_name.replace(".git", "")
 
