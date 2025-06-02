@@ -42,6 +42,10 @@ This project requires the install of the following packages:
 pip install jaydebeapi
 
 pip install networkx
+
+pip install python.dateutil
+
+pip install pytz
 ```
 
 #### 3. Gephi
@@ -57,6 +61,7 @@ https://gephi.org/users/install/
 - extraction of maven dependency trees using the [maven-dependency-plugin](https://github.com/apache/maven-dependency-plugin/)
 - output stored in a .txt file for further steps
 - Generation of a h2 database of dependencies of every version
+- Ability to limit dependency analysation by number of commmit or date range
 
 ## Command Line Parameter
 | Parameter | Explaination |
@@ -64,6 +69,8 @@ https://gephi.org/users/install/
 | -h --help | Show help |
 | -g --git | Link to GitHub repository to analyze |
 | -l --limit | Limits the amount of commits analyzed to last X commits |
+| --start | Limits analyzed commits to those commited on this date UTC and after. Input date in form "YYYY-MM-DD" |
+| --end | Limits analyzed commits to those commited on this date UTC and before. Input date in form "YYYY-MM-DD" |
 
 ## Accessing the database
 ### Option 1: H2 Webviewer

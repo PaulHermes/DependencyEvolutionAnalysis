@@ -16,6 +16,8 @@ def main():
 
     global_parameters.repo_url = args.git if args.git else global_parameters.default_repo_url   # TODO change to throw error for final release
     commit_limit = args.limit if args.limit else global_parameters.default_commit_limit
+    start_date = args.start if args.start else None
+    end_date = args.end if args.end else None
 
     set_repo_name(global_parameters.repo_url)   # for database 
     
@@ -25,7 +27,7 @@ def main():
     # Run main part
     try:
         partial_clone(global_parameters.repo_url, global_parameters.clone_dir)
-        analyze_history(global_parameters.mvn_path, global_parameters.clone_dir, commit_limit)
+        analyze_history(global_parameters.mvn_path, global_parameters.clone_dir, commit_limit, start_date, end_date)
         create_db()
     except Exception as e:
         print(f"\n Error occurred: {str(e)}")
@@ -35,9 +37,12 @@ def handle_command_line_arguments():
     
     parser.add_argument('-g', '--git', type=str, help="Link to github repository")
     parser.add_argument('-l', '--limit', type=int, help="Limit analysis to X newest commits")
+    parser.add_argument('--start', help="Start date of commits to be analyzed. Date should be in form \"YYYY-MM-DD\" (UTC)")
+    parser.add_argument('--end', help="End date of commits to be analyzed. Date should be in form \"YYYY-MM-DD\" (UTC)")
 
     # Ideas for more args:
     # Keep/Delete previously saved repos
+    # Save repo/history in specified dir
 
     return parser.parse_args()
 

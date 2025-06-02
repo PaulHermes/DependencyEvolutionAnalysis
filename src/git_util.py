@@ -1,3 +1,6 @@
+from datetime import datetime
+from dateutil import parser
+import pytz # timezones
 from mvn_util import *
 from global_parameters import *
 
@@ -56,7 +59,7 @@ def get_pom_commits(clone_dir):
 
     return commits
 
-def analyze_history(mvn_path, clone_dir, commit_limit=None):
+def analyze_history(mvn_path, clone_dir, commit_limit, start, end):
     """Analyze the dependecy tree of all commits where a pom.xml was changed
     For every commit a text file is created in pom_dirs.
     The first line of the file is the timestamp of the commit.
@@ -64,6 +67,8 @@ def analyze_history(mvn_path, clone_dir, commit_limit=None):
     @param mvn_path: path to mvn
     @param clone_dir: directory where repository got cloned to
     @param commit_limit: limits analyzation to last x commits
+    @param start: First date of commit to be considered
+    @param end: Last date of commit to be considered
     """
         
     output_directory = os.path.join(script_dir, output_dir)
@@ -72,6 +77,9 @@ def analyze_history(mvn_path, clone_dir, commit_limit=None):
     commits = get_pom_commits(clone_dir)
 
     for commit in commits[:commit_limit]:
+        # skip commit if outside date range
+        if(not is_commit_in_date_range(start, end, commit["timestamp"])):
+            continue
         try:
             run_command(["git", "checkout", "--force", commit["hash"]], cwd=clone_dir)
             pom_dirs = get_pom_directories(clone_dir, commit["hash"])
@@ -92,6 +100,41 @@ def analyze_history(mvn_path, clone_dir, commit_limit=None):
         except subprocess.CalledProcessError as e:
             print(f"Skipping commit {commit["hash"]}: {e.stderr}")
 
+def is_commit_in_date_range(start, end, commit):
+    """Check if date of commit is between start and end inclusive
+
+    @param start: Start date in form YYYY-MM-DD
+    @param end: End date in form YYYY-MM-DD
+    @param commit: Date of Commit in form YYYY-MM-DD hh:mm:ss timezone
+    """
+    # Skip if no start or end date specified
+    if not start and not end:
+        return True
+
+    start_obj = None
+    end_obj = None
+
+    # Parse user entered dates
+    if start:
+        start_obj = datetime.strptime(start, "%Y-%m-%d").date()
+    if end:
+        end_obj = datetime.strptime(end, "%Y-%m-%d").date()
+
+    # Parse timezone sensitive commit timestamp
+    commit_obj = parser.parse(commit)
+    commit_obj = commit_obj.astimezone(pytz.UTC).date()
+
+    # If both start and end are provided, check if commit is in range
+    if start_obj and end_obj:
+        return start_obj <= commit_obj <= end_obj
+    # If only start is provided, check if commit is after start
+    elif start_obj:
+        return commit_obj >= start_obj
+    # If only end is provided, check if commit is before end
+    elif end_obj:
+        return commit_obj <= end_obj
+    
+
 # Folgendes nur zum Testen von den spezifischen Funktionen hier drin
 # Will, dass spaeter hier einfach die git funktionen sind und im main script einfach mit den Funktionen hier gepullt wird 
 # und dann mit "mvn dependency:tree" subprocess call die text datei und dann DB eintraege gemacht werden. Allerdings not sure wie die commit history danach genutzt wird
@@ -106,3 +149,12 @@ if __name__ == "__main__":
     # pom_paths = get_pom_directories(clone_dir)
     # sparse_checkout_set(clone_dir, pom_paths)
 
+# Test date function
+    # start_date = "2025"
+    # end_date = ""
+    # commit_timestamp = "2025-05-30 22:23:45 +0200"
+
+    # if is_commit_in_date_range(start_date, end_date, commit_timestamp):
+    #     print("The commit is within the date range.")
+    # else:
+    #     print("The commit is outside the date range.")
