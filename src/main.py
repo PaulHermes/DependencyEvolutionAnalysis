@@ -5,6 +5,7 @@ import global_parameters
 from urllib.parse import urlparse
 from git_util import partial_clone, analyze_history
 from db_util import create_db
+from gephi_util import export_db_to_gexf
 
 def main():
     if platform.system() == "Windows":
@@ -29,6 +30,7 @@ def main():
         partial_clone(global_parameters.repo_url, global_parameters.clone_dir)
         analyze_history(global_parameters.mvn_path, global_parameters.clone_dir, commit_limit, start_date, end_date)
         create_db()
+        export_db_to_gexf()
     except Exception as e:
         print(f"\n Error occurred: {str(e)}")
 
